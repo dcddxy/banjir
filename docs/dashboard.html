@@ -110,7 +110,8 @@
     <script>
         async function fetchData() {
             try {
-                const response = await fetch('https://infobencanajkmv2.jkm.gov.my/api/pusat-buka.php?a=0&b=0');
+                // Using CORS proxy for testing purposes
+                const response = await fetch('https://cors-anywhere.herokuapp.com/https://infobencanajkmv2.jkm.gov.my/api/pusat-buka.php?a=0&b=0');
                 const data = await response.json();
                 return data;
             } catch (error) {
@@ -135,7 +136,7 @@
             
             data.forEach(center => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
+                row.innerHTML = ` 
                     <td>${center.nama_pusat || '-'}</td>
                     <td>${center.negeri || '-'}</td>
                     <td>${center.daerah || '-'}</td>
