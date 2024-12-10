@@ -114,7 +114,7 @@
                     ? 'http://localhost:3000'
                     : 'https://banjir.onrender.com/'; // We'll deploy to render.com
 
-                    const response = await fetch(`${baseUrl}/api/centers`, { mode: 'no-cors' });
+                    const response = await fetch(`${baseUrl}/api/centers`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
