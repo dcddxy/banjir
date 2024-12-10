@@ -115,7 +115,7 @@
                     : 'https://banjir.onrender.com'; // We'll deploy to render.com
 
                     const response = await fetch(`${baseUrl}/api/centers`);
-                    console.log('Base URL:', baseUrl);
+                    console.log('URL:', response.url);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
