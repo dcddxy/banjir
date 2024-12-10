@@ -128,7 +128,7 @@
         }
 
         function updateDashboard(data) {
-            if (!data) return;
+            if (!data || !Array.isArray(data)) return;
 
             // Update summary statistics
             document.getElementById('totalCenters').textContent = data.length;
@@ -154,6 +154,7 @@
                 tableBody.appendChild(row);
             });
         }
+        console.log(data);  // Check what is returned from the API
 
         async function initializeDashboard() {
             const data = await fetchData();
