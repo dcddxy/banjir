@@ -112,7 +112,7 @@
                 // Use local development server when running locally
                 const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                     ? 'http://localhost:3000'
-                    : 'https://banjir-dashboard.onrender.com'; // We'll deploy to render.com
+                    : 'https://banjir.onrender.com/'; // We'll deploy to render.com
 
                     const response = await fetch(`${baseUrl}/api/centers`, { mode: 'no-cors' });
                 if (!response.ok) {
