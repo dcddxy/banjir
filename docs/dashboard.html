@@ -109,18 +109,27 @@
     <script>
         async function fetchData() {
             try {
-                // Use local development server when running locally
                 const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                     ? 'http://localhost:3000'
-                    : 'https://banjir.onrender.com'; // We'll deploy to render.com
+                    : 'https://banjir.onrender.com';
 
-                    const response = await fetch(`${baseUrl}/api/centers`);
-                    console.log('URL:', response.url);
+                const response = await fetch(`${baseUrl}/api/centers`);
+                console.log('Fetching from:', `${baseUrl}/api/centers`);
+                
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                const data = await response.json();
-                return data;
+                
+                const responseData = await response.json();
+                console.log('Raw response:', responseData);
+                
+                // Extract the points array from the response
+                if (responseData && responseData.points) {
+                    return responseData.points;
+                } else {
+                    console.error('No points data in response');
+                    return null;
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
                 return null;
@@ -128,14 +137,18 @@
         }
 
         function updateDashboard(data) {
-            if (!data || !Array.isArray(data)) return;
+            if (!data || !Array.isArray(data)) {
+                console.error('Invalid data format:', data);
+                return;
+            }
 
             // Update summary statistics
             document.getElementById('totalCenters').textContent = data.length;
-            const totalVictims = data.reduce((sum, center) => sum + parseInt(center.mangsa || 0), 0);
-            const totalFamilies = data.reduce((sum, center) => sum + parseInt(center.keluarga || 0), 0);
-            document.getElementById('totalVictims').textContent = totalVictims;
-            document.getElementById('totalFamilies').textContent = totalFamilies;
+            const totalVictims = data.reduce((sum, center) => sum + (parseInt(center.mangsa) || 0), 0);
+            const totalFamilies = data.reduce((sum, center) => sum + (parseInt(center.keluarga) || 0), 0);
+            
+            document.getElementById('totalVictims').textContent = totalVictims.toLocaleString();
+            document.getElementById('totalFamilies').textContent = totalFamilies.toLocaleString();
 
             // Update table
             const tableBody = document.querySelector('#centersTable tbody');
@@ -144,19 +157,19 @@
             data.forEach(center => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${center.nama_pusat || '-'}</td>
+                    <td>${center.name || '-'}</td>
                     <td>${center.negeri || '-'}</td>
                     <td>${center.daerah || '-'}</td>
                     <td>${center.mangsa || '0'}</td>
                     <td>${center.keluarga || '0'}</td>
-                    <td><span class="badge bg-success">Buka</span></td>
+                    <td><span class="badge bg-success">Active</span></td>
                 `;
                 tableBody.appendChild(row);
             });
-            console.log(data);  // Check what is returned from the API
         }
 
         async function initializeDashboard() {
+            document.getElementById('loading').style.display = 'flex';
             const data = await fetchData();
             updateDashboard(data);
             document.getElementById('loading').style.display = 'none';
@@ -165,7 +178,7 @@
             setInterval(async () => {
                 const newData = await fetchData();
                 updateDashboard(newData);
-            }, 300000);
+            }, 5 * 60 * 1000);
         }
 
         // Start the dashboard
