@@ -5,6 +5,9 @@
     <title>Pusat Pemindahan Banjir Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
     <style>
         .card {
             transition: transform 0.2s;
@@ -97,6 +100,10 @@
                 </div>
             </div>
         </div>
+
+        <div id="map" style="height: 600px;"></div>
+        <button id="centerMapBtn" class="btn btn-primary">Center Map</button>
+
     </div>
 
     <footer class="footer mt-5 py-3 bg-white">
@@ -106,7 +113,97 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
     <script>
+        let map;
+        let markers = [];
+        const malaysiaCenter = [4.2105, 101.9758];
+
+        function initMap() {
+            console.log('Initializing map...');
+            try {
+                // Check if map container exists
+                const mapContainer = document.getElementById('map');
+                if (!mapContainer) {
+                    console.error('Map container not found');
+                    return;
+                }
+
+                // Initialize the map
+                map = L.map('map', {
+                    center: malaysiaCenter,
+                    zoom: 6,
+                    minZoom: 5,
+                    maxZoom: 18
+                });
+
+                // Add the tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: ' OpenStreetMap contributors',
+                    maxZoom: 18
+                }).addTo(map);
+
+                console.log('Map initialized successfully');
+
+                // Add center map button functionality
+                document.getElementById('centerMapBtn').addEventListener('click', () => {
+                    map.setView(malaysiaCenter, 6, { animate: true });
+                });
+            } catch (error) {
+                console.error('Error initializing map:', error);
+            }
+        }
+
+        function clearMarkers() {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+        }
+
+        function addMarkers(centers) {
+            if (!map) {
+                console.error('Map not initialized');
+                return;
+            }
+
+            clearMarkers();
+            centers.forEach(center => {
+                if (center.latti && center.longi) {
+                    try {
+                        const marker = L.marker([center.latti, center.longi])
+                            .bindPopup(`
+                                <div class="center-info">
+                                    <h5>${center.name}</h5>
+                                    <div class="center-stat">
+                                        <span>Negeri:</span>
+                                        <strong>${center.negeri}</strong>
+                                    </div>
+                                    <div class="center-stat">
+                                        <span>Daerah:</span>
+                                        <strong>${center.daerah}</strong>
+                                    </div>
+                                    <div class="center-stat">
+                                        <span>Mangsa:</span>
+                                        <strong>${center.mangsa || 0}</strong>
+                                    </div>
+                                    <div class="center-stat">
+                                        <span>Keluarga:</span>
+                                        <strong>${center.keluarga || 0}</strong>
+                                    </div>
+                                </div>
+                            `, {
+                                className: 'custom-popup'
+                            });
+                        markers.push(marker);
+                        marker.addTo(map);
+                    } catch (error) {
+                        console.error('Error adding marker:', error);
+                    }
+                }
+            });
+        }
+
         async function fetchData() {
             try {
                 const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -166,10 +263,14 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            // Add markers to map
+            addMarkers(data);
         }
 
         async function initializeDashboard() {
             document.getElementById('loading').style.display = 'flex';
+            initMap();
             const data = await fetchData();
             updateDashboard(data);
             document.getElementById('loading').style.display = 'none';
