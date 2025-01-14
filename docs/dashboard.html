@@ -121,29 +121,58 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
     <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('https://banjir.onrender.com/api/aliran-masuk');
+                const data = await response.json();
+                console.log('API Data:', data); // Debugging step
+
+                const labels = data.map(item => item.date); // Adjust based on actual data structure
+                const values = data.map(item => item.value); // Adjust based on actual data structure
+
+                const ctx = document.getElementById('lineChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Jumlah Aliran Mangsa Masuk',
+                            data: values,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Tarikh'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching or parsing data:', error);
+            }
+        });
+
+        // Existing map initialization code
+        const malaysiaCenter = [4.2105, 101.9758];
         let map;
         let markers = [];
-        const malaysiaCenter = [4.2105, 101.9758];
 
         function initMap() {
-            console.log('Initializing map...');
             try {
-                // Check if map container exists
-                const mapContainer = document.getElementById('map');
-                if (!mapContainer) {
-                    console.error('Map container not found');
-                    return;
-                }
-
-                // Initialize the map
-                map = L.map('map', {
-                    center: malaysiaCenter,
-                    zoom: 6,
-                    minZoom: 5,
-                    maxZoom: 18
-                });
-
-                // Add the tile layer
+                map = L.map('map').setView(malaysiaCenter, 6);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: ' OpenStreetMap contributors',
                     maxZoom: 18
@@ -151,7 +180,6 @@
 
                 console.log('Map initialized successfully');
 
-                // Add center map button functionality
                 document.getElementById('centerMapBtn').addEventListener('click', () => {
                     map.setView(malaysiaCenter, 6, { animate: true });
                 });
@@ -276,35 +304,6 @@
                 const newData = await fetchData();
                 updateDashboard(newData);
             }, 5 * 60 * 1000);
-        }
-
-        async function fetchData() {
-            try {
-                const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                    ? 'http://localhost:3000'
-                    : 'https://banjir.onrender.com';
-
-                const response = await fetch(`${baseUrl}/api/aliran-masuk`);
-                console.log('Fetching from:', `${baseUrl}/api/aliran-masuk`);
-                
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                
-                const responseData = await response.json();
-                console.log('Raw response:', responseData);
-                
-                // Extract the points array from the response
-                if (responseData && responseData.points) {
-                    return responseData.points;
-                } else {
-                    console.error('No points data in response');
-                    return null;
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                return null;
-            }
         }
     </script>
 </body>
