@@ -47,29 +47,3 @@ app.get('/api/centers', async (req, res) => {
         });
     }
 });
-
-app.get('/api/aliran-masuk', async (req, res) => {
-    try {
-        console.log('Fetching data from JKM API...');
-        const response = await axios.get('https://infobencanajkmv2.jkm.gov.my/api/data-dashboard-aliran-trend-masuk.php?a=0&b=1&seasonmain_id=209&seasonnegeri_id=');
-        
-        if (!response.data) {
-            console.error('No data received from JKM API');
-            return res.status(404).json({ error: 'No data received from source' });
-        }
-
-        console.log(`Data fetched successfully. Records: ${Array.isArray(response.data) ? response.data.length : 'Not an array'}`);
-        res.json(response.data);
-    } catch (error) {
-        console.error('Error fetching data:', error.message);
-        res.status(500).json({ 
-            error: 'Error fetching data',
-            message: error.message,
-            timestamp: new Date().toISOString()
-        });
-    }
-});
-
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
